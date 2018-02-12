@@ -8,12 +8,12 @@ namespace BashSoft
     public static class IOManager
     {
 
-        public static void TraverseDirectory(string path)
+        public static void TraverseDirectory(string depth)
         {
             OutputWriter.WriteEmptyLine();
-            int initialIdentation = path.Split('\\').Length;
+            int initialIdentation = SessionData.currentPath.Split('\\').Length;
             Queue<string> subFolders = new Queue<string>();
-            subFolders.Enqueue(path);
+            subFolders.Enqueue(SessionData.currentPath);
 
             while (subFolders.Count != 0)
             {
@@ -21,7 +21,7 @@ namespace BashSoft
                 int identation = currentPath.Split('\\').Length - initialIdentation;
 
                 //OutputWriter.WriteMessageOnNewLine($"{new string('-', identation)}{currentPath}");
-                OutputWriter.WriteMessageOnNewLine(string.Format("{0}{1}", 
+                OutputWriter.WriteMessageOnNewLine(string.Format("{0}{1}",
                                                     new string('-', identation), currentPath));
 
 
@@ -36,8 +36,42 @@ namespace BashSoft
                 {
                     subFolders.Enqueue(directoryPath);
                 }
-
             }
+        }
+
+        public static void CreateDirectoryInCurrentFolder(string name)
+        {
+            //string path = GetCurrentDirectoryPath() + "\\" + name;
+            string path = SessionData.currentPath + "\\" + name;
+            Directory.CreateDirectory(path);
+        }
+
+        public static void ChangeCurrentDirectoryRelative(string relativePath)
+        {
+            if (relativePath.Equals(".."))
+            {
+                string currentPath = SessionData.currentPath;
+                int indexOfLastSlash = currentPath.LastIndexOf("\\");
+                string newPath = currentPath.Substring(0, indexOfLastSlash);
+                SessionData.currentPath = newPath;
+            }
+            else
+            {
+                string currentPath = SessionData.currentPath;
+                currentPath += "\\" + relativePath;
+                ChangeCurrentDirectoryAbsolute(currentPath);
+            }
+        }
+
+        private static void ChangeCurrentDirectoryAbsolute(string absolutePath)
+        {
+            if (!Directory.Exists(absolutePath))
+            {
+                OutputWriter.DisplayException(ExceptionMessages.InvalidPath);
+                return;
+            }
+
+            SessionData.currentPath = absolutePath;
         }
     }
 }
